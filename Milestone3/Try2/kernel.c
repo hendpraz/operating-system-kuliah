@@ -25,77 +25,73 @@
 #define NOT_FOUND -1
 #define SUCCESS 0
 
+// Fungsi awal
+// #F01
 void handleInterrupt21 (int AX, int BX, int CX, int DX);
 void printString(char *string);
-void readString(char *string, int disableProcessControls);
+void readString(char *string, int disableProcessControls); //perubahan
 int mod(int a, int b);
 int div(int a, int b);
-//Sector
 void readSector(char *buffer, int sector);
 void writeSector(char *buffer, int sector);
-//File
+void clear(char *buffer, int length);
+
+// Fungsi pengelola file
+// #F02
 void findFile(char * parent, char * current, char * filename, int * idx, int * result);
 void readFile(char *buffer, char *path, int *result, char parentIndex);
 void writeFile(char *buffer, char *path, int *sectors, char parentIndex);
 void deleteFile(char *path, int *result, char parentIndex);
-//Dir
+void deleteFileIndex(char current);
+
+// Fungsi pengelola direktori
+// #F03
 void findDir(char * parent, char * current, char * filename, int * idx, int * result);
 void makeDirectory(char *path, int *result, char parentIndex);
 void deleteDirectory(char *path, int *success, char parentIndex);
-//Prog
+void deleteDirectoryIndex(char current);
+
+// Fungsi eksekusi dan terminasi
+// #F04
 void executeProgram (char *path, int *result, char parentIndex, char async);
 void executeProgramAsync (char *path, int *result, char parentIndex);
 void terminateProgram (int *result);
-//arg
+
+// Fungsi mengolah argumen
+// #F05
 void putArgs (char curdir, char argc, char **argv);
 void getCurdir (char *curdir);
 void getArgc (char *argc);
 void getArgv (char index, char *argv);
-//new
+
+//Fungsi milestone 3
+// #F06
 void yieldControl ();
 void sleep ();
 void pauseProcess (int segment, int *result);
 void resumeProcess (int segment, int *result);
-void continueProcess (int segment, int *result);
 void killProcess (int segment, int *result);
-//addition
+
+// Fungsi tambahan
+// F07
+void writeln(char *string);
 char compare(char * arr1, char * arr2, int length);
-void clear(char *buffer, int length);
-void printLogo();
-
-void deleteDirectoryIndex(char current);
-void deleteFileIndex(char current);
-
-#define INT_PRINTSTRING 0x00
-#define INT_READSTRING 0x01
-#define INT_READSECTOR 0x02
-#define INT_WRITESECTOR 0x03
-#define INT_READFILE 0x04
-#define INT_WRITEFILE 0x05
-#define INT_EXCPROGRAM 0x06
-#define INT_TERMPROGRAM 0x07
-#define INT_MAKEDIR 0x08
-#define INT_DELFILE 0x09
-#define INT_DELDIR 0x0A
-#define INT_PUTARGS 0x20
-#define INT_GETCWD 0x21
-#define INT_GETARGC 0x22
-#define INT_GETARGV 0X23
-#define INT_FINDDIR 0X90
-#define INT_FINDFILE 0X91
 
 int main() 
 {
+	//KAMU
     int succ = 0;
     char buffer[MAX_SECTORS * SECTOR_SIZE];
     int x;
     int y;
     char *argv[2];
     char buff[21];
+    
+    //AGLROITMA
     initializeProcStructures();
     makeInterrupt21();
     makeTimerInterrupt();
-    // Clear screen.
+    //Membersihkan layar
     y = 0;
     while (y < 30) {
         x = 0;
@@ -106,11 +102,10 @@ int main()
         }
         y++;
     }
-    printLogo();
     interrupt(0x10, 0x200, 0, 0, 0);
-    // Set default args.
+    // Set argumen default pada sektor argumen
     interrupt(0x21, 0x20, 0xFF, 0, argv);
-    // Calls shell.
+    // Memanggil shell
     interrupt(0x21, 0xFF << 8 | 0x6, "shell", &succ);
     while (1);  
 }
@@ -225,8 +220,6 @@ void handleInterrupt21 (int AX, int BX, int CX, int DX)
             *((int *) BX) = i;
             *((int *) CX) = j;
             break;
-        case 0x94:
-            continueProcess (BX, CX);
         default:
             printString("Invalid interrupt");
     }
@@ -264,7 +257,10 @@ void readString(char *string, int disableProcessControls)
             setKernelDataSegment();
             parentSegment = running->parentSegment;
             restoreDataSegment();
-            continueProcess(parentSegment, &success);
+            resumeProcess(parentSegment, &success);
+			if (success == SUCCESS) {
+				sleep();
+			}
         } else if (c == '\r') { // Return/Enter
             interrupt(0x10, 0xE00 + '\r', 0, 0, 0);
             interrupt(0x10, 0xE00 + '\n', 0, 0, 0);
@@ -316,6 +312,13 @@ void writeSector(char *buffer, int sector)
     interrupt(0x13, 0x301, buffer, div(sector, 36) * 0x100 + mod(sector, 18) + 1, mod(div(sector, 18), 2) * 0x100);
 }
 
+void clear(char *buffer, int length)
+{
+    int i;
+    for(i = 0; i < length; ++i){buffer[i] = EMPTY;}
+}
+
+// F02
 void findFile(char * parent, char * current, char * filename, int * idx, int * result) 
 {
     char name[MAX_FILENAME + 1];
@@ -482,6 +485,7 @@ void deleteFileIndex(char current)
     writeSector(map, MAP_SECTOR);
 }
 
+// F03
 void findDir(char * parent, char * current, char * filename, int * idx, int * result) 
 {
     char name[MAX_FILENAME + 1];
@@ -593,6 +597,7 @@ void deleteDirectoryIndex(char current)
     }
 }
 
+// F04
 void executeProgram (char *path, int *result, char parentIndex, char async) 
 { 
     struct PCB* pcb;
@@ -650,6 +655,7 @@ void terminateProgram (int *result)
     yieldControl();
 }
 
+// F05
 void putArgs (char curdir, char argc, char **argv) 
 {
     char args[SECTOR_SIZE];
@@ -699,6 +705,7 @@ void getArgv (char index, char *argv)
     }
 }
 
+// F06
 void yieldControl () 
 {
     interrupt(0x08, 0, 0, 0, 0);
@@ -783,15 +790,6 @@ void resumeProcess (int segment, int *result)
     *result = res;
 }
 
-void continueProcess (int segment, int *result) 
-{
-    resumeProcess(segment, result);
-    if (*result == SUCCESS) {
-        printString("Tes\n");
-        sleep();
-    }
-}
-
 void killProcess (int segment, int *result) 
 {
     struct PCB *pcb;
@@ -812,6 +810,12 @@ void killProcess (int segment, int *result)
     *result = res;
 }
 
+// F07
+void writeln(char *string){
+	printString(string);
+	printString("\n\r");
+}
+
 char compare(char * arr1, char * arr2, int length) 
 {
     int i = 0;
@@ -826,42 +830,4 @@ char compare(char * arr1, char * arr2, int length)
         i++;
     }
     return equal;
-}
-
-void clear(char *buffer, int length)
-{
-    int i;
-    for(i = 0; i < length; ++i){buffer[i] = EMPTY;}
-}
-
-void printLogo()
-{
-	int i;
-	for(i=60; i<69; i++){
-		putInMemory(0xB000, 0x8000 + (80*2+i)*2, '=');
-		putInMemory(0xB000, 0x8001 + (80*2+i)*2, 0xA);
-		putInMemory(0xB000, 0x8000 + (80*8+i)*2, '=');
-		putInMemory(0xB000, 0x8001 + (80*8+i)*2, 0xA);
-		if(i != 4+60){
-			putInMemory(0xB000, 0x8000 + (80*3+i)*2, '#');
-			putInMemory(0xB000, 0x8001 + (80*3+i)*2, 0xD);
-			putInMemory(0xB000, 0x8000 + (80*7+i)*2, '#');
-			putInMemory(0xB000, 0x8001 + (80*7+i)*2, 0xD);
-		}
-		if(i == 0+60 || i == 3+60 || i == 5+60){
-			putInMemory(0xB000, 0x8000 + (80*4+i)*2, '#');
-			putInMemory(0xB000, 0x8001 + (80*4+i)*2, 0xD);
-			putInMemory(0xB000, 0x8000 + (80*5+i)*2, '#');
-			putInMemory(0xB000, 0x8001 + (80*5+i)*2, 0xD);
-		}
-		if(i >= 6+60 && i <= 8+60){
-			putInMemory(0xB000, 0x8000 + (80*5+i)*2, '#');
-			putInMemory(0xB000, 0x8001 + (80*5+i)*2, 0xD);
-		}
-		if(i==0+60 || i==3+60 || i==8+60){
-			putInMemory(0xB000, 0x8000 + (80*6+i)*2, '#');
-			putInMemory(0xB000, 0x8001 + (80*6+i)*2, 0xD);
-		}
-	}
-
 }

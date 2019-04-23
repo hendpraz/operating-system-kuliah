@@ -20,9 +20,9 @@ void main() {
             interrupt(0x21, (curdir << 8) | 0x0A, argv[0], &succ, 0);
         }
         if (succ == NOT_FOUND) {
-            interrupt(0x21, 0x0, "File Not Found.\n", 0, 0);      
+            interrupt(0x21, 0x0, "File tidak ditemukan!\n", 0, 0);      
         } else if (succ != SUCCESS) {
-            interrupt(0x21, 0x0, "Cannot be Deleted\n", 0, 0);      
+            interrupt(0x21, 0x0, "File gagal didelete!\n", 0, 0);      
         }
     }
     //terminateProgram(0) BX = 0 AL = 0x07;

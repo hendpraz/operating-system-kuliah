@@ -29,7 +29,7 @@ void main() {
                 buff[j] = dirs[i * ENTRY_LENGTH + 1 + j]; j++;
             }
             buff[j] = '\0';
-            interrupt(0x21, 0x0, " Directory = ", 0, 0);
+            interrupt(0x21, 0x0, "dir ", 0, 0);
             interrupt(0x21, 0x0, buff, 0, 0);
             interrupt(0x21, 0x0, "\n", 0, 0);
         }
@@ -41,7 +41,7 @@ void main() {
                 buff[j] = files[i * ENTRY_LENGTH + 1 + j]; j++;
             }
             buff[j] = '\0';
-            interrupt(0x21, 0x0, " Files = ", 0, 0);
+            interrupt(0x21, 0x0, "file ", 0, 0);
             interrupt(0x21, 0x0, buff, 0, 0);
             interrupt(0x21, 0x0, "\n", 0, 0);
         }

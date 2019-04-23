@@ -3,6 +3,7 @@ char compare(char * arr1, char * arr2, int length);
 #define MAX_FILENAME 15
 #define ALREADY_EXISTS -2
 #define NOT_FOUND -1
+#define SUCCESS 0
 
 void main() {
     char curdir;
@@ -20,8 +21,13 @@ void main() {
     for (i = 0; i < argc; i++) {interrupt(0x21, 0x23, i, argv[i], 0);}
     if (argc > 0) {
         interrupt(0x21, (curdir << 8) | 0x08, argv[0], &succ, 0);
-        if (succ == ALREADY_EXISTS) {interrupt(0x21, 0x0, "Directory Found.\n", 0, 0);} 
-        else if (succ == NOT_FOUND) {interrupt(0x21, 0x0, "Directory Not Found.\n", 0, 0);}
+        if (succ == ALREADY_EXISTS) {
+			interrupt(0x21, 0x0, "Directory telah ada!\n", 0, 0);
+		} else if (succ == NOT_FOUND) {
+			interrupt(0x21, 0x0, "Directory tidak ditemukan!\n", 0, 0);
+		} else if (succ == SUCCESS){
+			interrupt(0x21, 0x0, "Directory berhasil dibuat\n", 0, 0);
+		}
     }
     //terminateProgram(0) BX = 0 AL = 0x07;
     interrupt(0x21,0x07,0,0,0);
