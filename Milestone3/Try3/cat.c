@@ -72,10 +72,11 @@ void main() {
             }
             outBuff[k - 1] = '\0';
             //printString
-            interrupt(0x21, 0x0, "File Anda tersimpan!\n", 0, 0);
+            interrupt(0x21, 0x0, "File Anda tersimpan! ", 0, 0);
             //for Debug
             interrupt(0x21, 0x0, "Isi file Anda : ", 0, 0);
             interrupt(0x21, 0x0, outBuff, 0, 0);
+            interrupt(0x21, 0x0, "\n", 0, 0);
             sectors = div(k, SECTOR_SIZE) + 1;
             //printString writeFile
             interrupt(0x21, (curdir << 8) | 0x05, outBuff, argv[0], &sectors);
