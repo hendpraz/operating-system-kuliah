@@ -60,8 +60,7 @@ int main()
 
     putArgs(0xFF, 0, 0);
     executeProgram("shell", 0x2000, &success, 0xFF);
-    while (1)
-        ;
+    while (1);
 }
 
 void handleInterrupt21(int AX, int BX, int CX, int DX)
