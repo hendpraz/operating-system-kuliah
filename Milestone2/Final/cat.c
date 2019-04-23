@@ -22,9 +22,8 @@ int main()
         }
         else
         {
-			writeln("Isi file Anda");
+		writeln("Isi file Anda");
             writeln(content);
-            writeln("");
         }
     }
     else if (argc == 2)
